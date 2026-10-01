@@ -87,7 +87,7 @@ async function runTests() {
     console.log('SUCCESS: Security cross-delete prevented.');
 
     console.log('ALL MVP-6 WATCHLIST TESTS PASSED!');
-    process.exit(0);
+    return;
   } catch (err) {
     console.error('Test Failed:', err.message);
     process.exit(1);

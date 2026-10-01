@@ -1,5 +1,5 @@
 const express = require('express');
-const { tradeReview, portfolioReview, patternReview, dailyDebrief, whatChangedToday, behaviorReview } = require('../controllers/aiController');
+const { tradeReview, portfolioReview, patternReview, dailyDebrief, whatChangedToday, behaviorReview, playbookSuggestion, playbookReview } = require('../controllers/aiController');
 const aiRateLimiter = require('../middleware/aiRateLimiter');
 const router = express.Router();
 

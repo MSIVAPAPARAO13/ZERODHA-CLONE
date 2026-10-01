@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import toast from "react-hot-toast";
 
 import { orderService, accountService, playbookService } from "../services/api";
@@ -8,7 +8,8 @@ import "./BuyActionWindow.css";
 const PlaybookChecklist = ({ playbookId, checklistState, setChecklistState }) => {
   const [rules, setRules] = useState([]);
   useEffect(() => {
-     playbookService.getPlaybook(playbookId).then(res => setRules(res.data.data.rules)).catch(()=>{});
+    if (!playbookId) return;
+    playbookService.getPlaybook(playbookId).then(res => setRules(res.data?.data?.rules || [])).catch(()=>{});
   }, [playbookId]);
   
   if (!rules.length) return null;
@@ -26,6 +27,7 @@ const PlaybookChecklist = ({ playbookId, checklistState, setChecklistState }) =>
 };
 
 const BuyActionWindow = ({ uid, actionType = "BUY" }) => {
+  const { closeBuyWindow } = useContext(GeneralContext);
   const [stockQuantity, setStockQuantity] = useState(1);
   const [stockPrice, setStockPrice] = useState(0.0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,9 +50,9 @@ const BuyActionWindow = ({ uid, actionType = "BUY" }) => {
 
   useEffect(() => {
     if (actionType === 'BUY') {
-      accountService.getBalance().then(res => setBalance(res.data.data.virtualBalance)).catch(() => {});
+      accountService.getBalance().then(res => setBalance(res.data?.data?.virtualBalance || 100000)).catch(() => {});
     }
-    playbookService.getPlaybooks().then(res => setPlaybooks(res.data.data)).catch(() => {});
+    playbookService.getPlaybooks().then(res => setPlaybooks(res.data?.data || [])).catch(() => {});
   }, [actionType]);
 
   const handleOrderClick = async () => {
@@ -75,8 +77,7 @@ const BuyActionWindow = ({ uid, actionType = "BUY" }) => {
 
       await orderService.placeOrder(orderPayload);
       toast.success(`${actionType} order placed successfully for ${uid}`);
-      GeneralContext.closeBuyWindow();
-      window.location.reload(); 
+      closeBuyWindow();
     } catch (err) {
       toast.error(err.response?.data?.error?.message || err.message || "Failed to place order.");
     } finally {
@@ -85,10 +86,9 @@ const BuyActionWindow = ({ uid, actionType = "BUY" }) => {
   };
 
   const handleCancelClick = () => {
-    GeneralContext.closeBuyWindow();
+    closeBuyWindow();
   };
 
-  const selectedPlaybook = playbooks.find(p => p.id === selectedPlaybookId);
 
   return (
     <div className="container" id="buy-window" draggable="true" style={{ maxHeight: '90vh', overflowY: 'auto' }}>

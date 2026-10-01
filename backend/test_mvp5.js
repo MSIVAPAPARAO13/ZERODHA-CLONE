@@ -40,7 +40,8 @@ async function runTests() {
     console.log('SUCCESS: Retrieved full watchlist dataset.');
 
     console.log('ALL MVP-5 MARKET DATA TESTS PASSED!');
-    process.exit(0);
+    // Clean exit
+    return;
   } catch (err) {
     console.error('Test Failed:', err.message);
     process.exit(1);

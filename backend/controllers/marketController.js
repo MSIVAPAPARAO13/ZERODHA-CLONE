@@ -4,6 +4,9 @@ const handleError = (err, res, next) => {
   if (err.message === 'MARKET_DATA_RATE_LIMITED') {
     return res.status(429).json({ success: false, data: null, error: { code: 'MARKET_DATA_RATE_LIMITED', message: 'Market data provider rate limit reached.' } });
   }
+  if (err.message.includes('DATA_UNAVAILABLE') || err.message.includes('not found') || err.message.includes('Unknown symbol')) {
+    return res.status(404).json({ success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } });
+  }
   if (err.message.includes('not supported')) {
     return res.status(501).json({ success: false, data: null, error: { code: 'NOT_SUPPORTED', message: err.message } });
   }
@@ -105,4 +108,62 @@ const getMarketIntelligence = async (req, res, next) => {
   }
 };
 
-module.exports = { getQuote, getQuotes, searchSymbols, getHistoricalData, getTechnicalIndicators, getNewsSentiment, getMarketIntelligence };
+const marketRegimeService = require("../services/marketRegimeService");
+
+const getMarketRegime = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId || req.user?._id;
+    const regimeData = await marketRegimeService.detectCurrentRegime(userId, req.query);
+    res.json({
+      success: true,
+      data: regimeData,
+      error: null
+    });
+  } catch (err) {
+    handleError(err, res, next);
+  }
+};
+
+const getMarketRegimeHistory = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId || req.user?._id;
+    const { limit = 20 } = req.query;
+    const history = await marketRegimeService.getRegimeHistory(userId, limit);
+    res.json({
+      success: true,
+      data: history,
+      error: null
+    });
+  } catch (err) {
+    handleError(err, res, next);
+  }
+};
+
+const marketNarrativeService = require("../services/marketNarrativeService");
+
+const getMarketNarrative = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId || req.user?._id;
+    const narrative = await marketNarrativeService.generateMarketNarrative(userId, req.query);
+    res.json({
+      success: true,
+      data: narrative,
+      error: null
+    });
+  } catch (err) {
+    handleError(err, res, next);
+  }
+};
+
+module.exports = {
+  getQuote,
+  getQuotes,
+  searchSymbols,
+  getHistoricalData,
+  getTechnicalIndicators,
+  getNewsSentiment,
+  getMarketIntelligence,
+  getMarketRegime,
+  getMarketRegimeHistory,
+  getMarketNarrative
+};

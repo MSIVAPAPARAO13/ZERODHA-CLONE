@@ -44,7 +44,51 @@ const TradeJournalSchema = new mongoose.Schema({
   checklist: [{
     ruleText: String,
     followed: Boolean
-  }]
+  }],
+  setup: {
+    type: String,
+    default: ""
+  },
+  evidence: [{
+    type: String
+  }],
+  emotion: {
+    type: String,
+    enum: ['DISCIPLINED', 'FOMO', 'ANXIOUS', 'CONFIDENT', 'FRUSTRATED', 'NEUTRAL', ''],
+    default: 'NEUTRAL'
+  },
+  mistake: {
+    type: String,
+    default: ""
+  },
+  executionNote: {
+    type: String,
+    default: ""
+  },
+  result: {
+    pnl: { type: Number, default: 0 },
+    pnlPercent: { type: Number, default: 0 },
+    exitPrice: { type: Number, default: null },
+    exitDate: { type: Date, default: null },
+    status: { type: String, enum: ['OPEN', 'CLOSED', 'PARTIAL'], default: 'OPEN' }
+  },
+  lesson: {
+    type: String,
+    default: ""
+  },
+  researchSessionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ResearchSession',
+    default: null
+  },
+  reviewDate: {
+    type: Date,
+    default: null
+  },
+  isEarlyExit: {
+    type: Boolean,
+    default: false
+  }
 }, { timestamps: true });
 
 TradeJournalSchema.index({ user: 1, createdAt: -1 });

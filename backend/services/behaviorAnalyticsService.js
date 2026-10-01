@@ -29,20 +29,30 @@ class BehaviorAnalyticsService {
 
     const tradeCount = replays.length;
     
-    if (tradeCount < MIN_PATTERN_SAMPLE) {
+    if (tradeCount === 0) {
       return {
         window: windowQuery,
-        tradeCount,
-        message: 'Not enough data for behavioral patterns yet. Continue journaling trades to unlock insights.'
+        tradeCount: 0,
+        isCalibrating: true,
+        message: 'No journaled trades found in this timeframe. Log trades in your Trade Journal to unlock behavioral insights.',
+        summary: { winRate: 0, avgPnl: 0, profitFactor: 0, closedCount: 0, openCount: 0 },
+        planExecution: { targetReached: 0, riskCrossed: 0, exitBeforeTarget: 0 },
+        advanced: { exitEfficiency: "0.00", avgMfe: "0.00", avgMae: "0.00", dataResolution: "1day" },
+        patterns: [],
+        dataQuality: { strategy: "0%", thesis: "0%", target: "0%", risk: "0%", reason: "0%", confidence: "0%" }
       };
     }
 
-    // Build aggregations
+    // Build aggregations for whatever trades exist
     const analytics = this._calculateMetrics(replays);
     
     return {
       window: windowQuery,
       tradeCount,
+      isCalibrating: tradeCount < MIN_PATTERN_SAMPLE,
+      message: tradeCount < MIN_PATTERN_SAMPLE 
+        ? `Preliminary baseline active (${tradeCount}/${MIN_PATTERN_SAMPLE} trades). Analytics will fully calibrate as you continue journaling.`
+        : null,
       ...analytics
     };
   }
@@ -189,7 +199,8 @@ class BehaviorAnalyticsService {
         journaledTrades: totalTrades,
         closedTrades,
         winRate: closedTrades > 0 ? ((profitableTrades / closedTrades) * 100).toFixed(1) : 0,
-        avgPnl: closedTrades > 0 ? (totalRealizedPnl / closedTrades).toFixed(2) : 0,
+        avgPnl: closedTrades > 0 ? (totalRealizedPnl / closedTrades).toFixed(2) : "0.00",
+        avgRealizedPnL: closedTrades > 0 ? parseFloat((totalRealizedPnl / closedTrades).toFixed(2)) : 0,
         avgHoldDays: (totalHoldingDays / totalTrades).toFixed(1),
         avgConfidence: (sumConfidence / totalTrades).toFixed(1)
       },

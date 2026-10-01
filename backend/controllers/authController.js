@@ -1,4 +1,7 @@
 const { UserModel } = require('../models/UserModel');
+const { HoldingsModel } = require('../models/HoldingsModel');
+const { WatchlistModel } = require('../models/WatchlistModel');
+const demoService = require('../services/demoService');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -29,8 +32,16 @@ const registerUser = async (req, res, next) => {
     const user = await UserModel.create({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      virtualBalance: 150000
     });
+
+    // Auto-seed starter portfolio and market data for realistic experience
+    try {
+      await demoService.seedUserData(user._id);
+    } catch (seedErr) {
+      console.error("Auto-seed error on registration:", seedErr);
+    }
 
     const token = generateToken(user._id);
 
@@ -65,6 +76,19 @@ const loginUser = async (req, res, next) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, data: null, error: { message: 'Invalid credentials' }});
+    }
+
+    // If existing user has 0 holdings and 0 watchlist items, auto-seed starter data
+    try {
+      const [hCount, wCount] = await Promise.all([
+        HoldingsModel.countDocuments({ user: user._id }),
+        WatchlistModel.countDocuments({ user: user._id })
+      ]);
+      if (hCount === 0 && wCount === 0) {
+        await demoService.seedUserData(user._id);
+      }
+    } catch (seedCheckErr) {
+      console.error("Seed check on login error:", seedCheckErr);
     }
 
     const token = generateToken(user._id);

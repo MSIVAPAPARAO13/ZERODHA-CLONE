@@ -10,10 +10,20 @@ class AlphaVantageProvider {
     });
   }
 
+  _formatSymbol(symbol) {
+    if (!symbol) return '';
+    let s = String(symbol).toUpperCase().trim();
+    if (!s.includes('.') && !s.includes(':')) {
+      return `${s}.BSE`;
+    }
+    return s;
+  }
+
   async getQuote(symbol) {
     try {
+      const formattedSymbol = this._formatSymbol(symbol);
       const response = await this.client.get(`/query`, {
-        params: { function: 'GLOBAL_QUOTE', symbol, apikey: this.apiKey }
+        params: { function: 'GLOBAL_QUOTE', symbol: formattedSymbol, apikey: this.apiKey }
       });
       
       if (response.data.Information && response.data.Information.includes('rate limit')) {

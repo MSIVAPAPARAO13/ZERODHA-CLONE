@@ -1,7 +1,21 @@
 const express = require('express');
-const { getQuote, getQuotes, searchSymbols, getHistoricalData, getTechnicalIndicators, getNewsSentiment, getMarketIntelligence } = require('../controllers/marketController');
+const {
+  getQuote,
+  getQuotes,
+  searchSymbols,
+  getHistoricalData,
+  getTechnicalIndicators,
+  getNewsSentiment,
+  getMarketIntelligence,
+  getMarketRegime,
+  getMarketRegimeHistory,
+  getMarketNarrative
+} = require('../controllers/marketController');
 const router = express.Router();
 
+router.get('/narrative', getMarketNarrative);
+router.get('/regime', getMarketRegime);
+router.get('/regime/history', getMarketRegimeHistory);
 router.get('/quote/:symbol', getQuote);
 router.get('/quotes', getQuotes);
 router.get('/search', searchSymbols);

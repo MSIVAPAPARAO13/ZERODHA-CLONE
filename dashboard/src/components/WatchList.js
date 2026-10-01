@@ -1,18 +1,22 @@
 import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import GeneralContext from "./GeneralContext";
 import { Tooltip, Grow } from "@mui/material";
 import {
-  BarChartOutlined,
   KeyboardArrowDown,
   KeyboardArrowUp,
-  MoreHoriz,
 } from "@mui/icons-material";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 import { DoughnutChart } from "./DoughnutChart";
 import { watchlistService, marketService } from "../services/api";
+
+const TOP_NIFTY = [
+  "RELIANCE", "TCS", "INFY", "HDFCBANK", "TATAMOTORS",
+  "ICICIBANK", "BHARTIARTL", "ITC", "SBIN", "LT"
+];
 
 const WatchList = () => {
   const [watchlist, setWatchlist] = useState([]);
@@ -20,12 +24,13 @@ const WatchList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   const loadWatchlist = async () => {
     try {
       const res = await watchlistService.getWatchlist();
       if (res.data && res.data.success) {
-        setWatchlist(res.data.data);
+        setWatchlist(res.data.data || []);
       }
     } catch (err) {
       console.error("Failed to load watchlist", err);
@@ -39,7 +44,7 @@ const WatchList = () => {
   }, []);
 
   useEffect(() => {
-    if (!searchQuery) {
+    if (!searchQuery.trim()) {
       setSearchResults([]);
       return;
     }
@@ -47,13 +52,13 @@ const WatchList = () => {
       setSearching(true);
       try {
         const res = await marketService.searchSymbols(searchQuery);
-        setSearchResults(res.data.data || []);
+        setSearchResults(res.data?.data || []);
       } catch (err) {
-        console.error(err);
+        console.error("Search error:", err);
       } finally {
         setSearching(false);
       }
-    }, 500);
+    }, 350);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -62,19 +67,39 @@ const WatchList = () => {
       await watchlistService.addSymbol(symbol);
       toast.success(`${symbol} added to watchlist`);
       setSearchQuery("");
+      setSearchResults([]);
       loadWatchlist();
     } catch (err) {
-      // Toast error handled by axios interceptor
+      // Toast handled by api interceptor
     }
   };
 
   const handleRemoveSymbol = async (symbol) => {
     try {
       await watchlistService.removeSymbol(symbol);
-      toast.success(`${symbol} removed from watchlist`);
+      toast.success(`${symbol} removed`);
       loadWatchlist();
     } catch (err) {
-      // Toast error handled by axios interceptor
+      // Toast handled by api interceptor
+    }
+  };
+
+  const handleQuickSeed = async () => {
+    setSeeding(true);
+    try {
+      for (const sym of TOP_NIFTY) {
+        try {
+          await watchlistService.addSymbol(sym);
+        } catch (e) {
+          // ignore duplicate
+        }
+      }
+      toast.success("Added top NIFTY 50 stocks to watchlist");
+      await loadWatchlist();
+    } catch (err) {
+      toast.error("Failed to seed watchlist");
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -83,23 +108,23 @@ const WatchList = () => {
     labels,
     datasets: [
       {
-        label: "Price",
+        label: "Price (₹)",
         data: watchlist.map((stock) => stock.price || 0),
         backgroundColor: [
-          "rgba(255, 99, 132, 0.5)",
-          "rgba(54, 162, 235, 0.5)",
-          "rgba(255, 206, 86, 0.5)",
-          "rgba(75, 192, 192, 0.5)",
-          "rgba(153, 102, 255, 0.5)",
-          "rgba(255, 159, 64, 0.5)",
+          "rgba(56, 189, 248, 0.6)",
+          "rgba(16, 185, 129, 0.6)",
+          "rgba(244, 63, 94, 0.6)",
+          "rgba(245, 158, 11, 0.6)",
+          "rgba(139, 92, 246, 0.6)",
+          "rgba(59, 130, 246, 0.6)",
         ],
         borderColor: [
-          "rgba(255, 99, 132, 1)",
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 206, 86, 1)",
-          "rgba(75, 192, 192, 1)",
-          "rgba(153, 102, 255, 1)",
-          "rgba(255, 159, 64, 1)",
+          "rgba(56, 189, 248, 1)",
+          "rgba(16, 185, 129, 1)",
+          "rgba(244, 63, 94, 1)",
+          "rgba(245, 158, 11, 1)",
+          "rgba(139, 92, 246, 1)",
+          "rgba(59, 130, 246, 1)",
         ],
         borderWidth: 1,
       },
@@ -107,152 +132,220 @@ const WatchList = () => {
   };
 
   return (
-    <div className="watchlist-container">
-      <div className="search-container" style={{ position: 'relative' }}>
-        <input
-          type="text"
-          name="search"
-          id="search"
-          placeholder="Search eg:infy, bse, nifty fut weekly, gold mcx"
-          className="search"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          autoComplete="off"
-        />
-        <span className="counts"> {watchlist.length} / 50</span>
-        
-        {searchQuery && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #ddd', zIndex: 10 }}>
-            {searching ? <p style={{ padding: '8px' }}>Searching...</p> : (
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {searchResults.map(s => (
-                  <li key={s.symbol} style={{ padding: '8px', borderBottom: '1px solid #eee', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>{s.name} ({s.symbol})</span>
-                    <button onClick={() => handleAddSymbol(s.symbol)} style={{ background: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '2px 8px' }}>+ Add</button>
+    <aside className="watchlist-container" aria-label="Market Watchlist">
+      {/* Search Header */}
+      <div className="watchlist-search-box">
+        <div className="search-input-wrapper">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            name="watchlist-search"
+            id="watchlist-search"
+            placeholder="Search stock, index, f&o..."
+            className="watchlist-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            autoComplete="off"
+            aria-label="Search watchlist symbols"
+          />
+          {searchQuery && (
+            <button
+              className="search-clear-btn"
+              onClick={() => { setSearchQuery(""); setSearchResults([]); }}
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        <div className="watchlist-count-badge font-mono">
+          {watchlist.length}<span className="text-muted">/50</span>
+        </div>
+
+        {/* Autocomplete Dropdown */}
+        {searchQuery.trim() && (
+          <div className="watchlist-search-dropdown">
+            {searching ? (
+              <div className="search-status-row">
+                <span className="spinner-mini"></span> Searching securities...
+              </div>
+            ) : searchResults.length > 0 ? (
+              <ul className="search-results-list">
+                {searchResults.map((s) => (
+                  <li
+                    key={s.symbol}
+                    className="search-result-item"
+                    onClick={() => handleAddSymbol(s.symbol)}
+                  >
+                    <div className="search-result-left">
+                      <span className="search-result-symbol font-mono">{s.symbol}</span>
+                      <span className="search-result-name">{s.name || s.symbol}</span>
+                    </div>
+                    <button
+                      className="btn-add-symbol"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddSymbol(s.symbol);
+                      }}
+                      title="Add to watchlist"
+                    >
+                      + Add
+                    </button>
                   </li>
                 ))}
-                {searchResults.length === 0 && <li style={{ padding: '8px' }}>No matches found</li>}
               </ul>
+            ) : (
+              <div className="search-empty-state">
+                <span>No matching symbols found</span>
+                <button
+                  className="btn-seed-custom"
+                  onClick={() => handleAddSymbol(searchQuery.toUpperCase().trim())}
+                >
+                  + Add "{searchQuery.toUpperCase().trim()}"
+                </button>
+              </div>
             )}
           </div>
         )}
       </div>
 
-      {loading ? (
-        <p style={{ textAlign: "center", padding: "20px" }}>Loading Watchlist...</p>
-      ) : watchlist.length === 0 ? (
-        <p style={{ textAlign: "center", padding: "20px", color: "#888" }}>
-          Your watchlist is empty.<br />Search for a stock to add it.
-        </p>
-      ) : (
-        <ul className="list">
-          {watchlist.map((stock, index) => {
-            return <WatchListItem stock={stock} key={index} onRemove={() => handleRemoveSymbol(stock.symbol)} />;
-          })}
-        </ul>
-      )}
+      {/* Watchlist Body */}
+      <div className="watchlist-scroll-area">
+        {loading ? (
+          <div className="watchlist-loading-state">
+            <div className="spinner-mini"></div>
+            <p>Loading market feed...</p>
+          </div>
+        ) : watchlist.length === 0 ? (
+          <div className="watchlist-empty-card">
+            <div className="empty-icon">📈</div>
+            <h4>Watchlist is empty</h4>
+            <p>Search for symbols above or load top benchmark stocks with one click.</p>
+            <button
+              className="btn-quick-seed"
+              onClick={handleQuickSeed}
+              disabled={seeding}
+            >
+              {seeding ? "Adding..." : "⚡ Add Top NIFTY 50"}
+            </button>
+          </div>
+        ) : (
+          <ul className="watchlist-items-list">
+            {watchlist.map((stock, index) => (
+              <WatchListItem
+                stock={stock}
+                key={stock.symbol || index}
+                onRemove={() => handleRemoveSymbol(stock.symbol)}
+              />
+            ))}
+          </ul>
+        )}
 
-      {watchlist.length > 0 && <DoughnutChart data={data} />}
-    </div>
+        {watchlist.length > 0 && (
+          <div className="watchlist-chart-wrapper">
+            <div className="chart-header">
+              <span className="chart-title">ALLOCATION SPREAD</span>
+            </div>
+            <DoughnutChart data={data} />
+          </div>
+        )}
+      </div>
+
+      {/* Footer / Summary Bar */}
+      <div className="watchlist-footer-strip">
+        <span className="footer-label font-mono flex-row items-center gap-1.5 text-xs">
+          <span className="pulse-dot"></span>
+          NSE • BSE REAL-TIME FEED
+        </span>
+        <span className="font-mono text-xs text-muted">{watchlist.length} Securities</span>
+      </div>
+    </aside>
   );
 };
 
 export default WatchList;
 
 const WatchListItem = ({ stock, onRemove }) => {
-  const [showWatchlistActions, setShowWatchlistActions] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const isDown = stock.isDown ?? (Number(stock.changePercent) < 0);
+  const priceFormatted = typeof stock.price === 'number'
+    ? stock.price.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : (stock.price || "0.00");
 
-  const handleMouseEnter = (e) => {
-    setShowWatchlistActions(true);
-  };
-
-  const handleMouseLeave = (e) => {
-    setShowWatchlistActions(false);
-  };
-
-  if (stock.error) {
-    return (
-      <li onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <div className="item">
-          <p>{stock.symbol}</p>
-          <div className="itemInfo">
-            <span className="percent" style={{ color: 'red' }}>{stock.error}</span>
-          </div>
-        </div>
-        {showWatchlistActions && (
-          <span className="actions">
-            <button className="action" onClick={onRemove} title="Remove">
-              <DeleteOutlineIcon className="icon" />
-            </button>
-          </span>
-        )}
-      </li>
-    );
-  }
+  const changeFormatted = typeof stock.changePercent === 'number'
+    ? (stock.changePercent >= 0 ? `+${stock.changePercent.toFixed(2)}%` : `${stock.changePercent.toFixed(2)}%`)
+    : (stock.changePercent ? `${stock.changePercent}%` : "0.00%");
 
   return (
-    <li onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <div className="item">
-        <p className={stock.isDown ? "down" : "up"}>{stock.symbol}</p>
-        <div className="itemInfo">
-          <span className="percent">{stock.changePercent}%</span>
-          {stock.isDown ? (
-            <KeyboardArrowDown className="down" />
-          ) : (
-            <KeyboardArrowUp className="down" />
-          )}
-          <span className="price">{stock.price}</span>
+    <li
+      className={`watchlist-item-row ${hovered ? "hovered" : ""}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="watchlist-item-main">
+        <div className="stock-identity">
+          <span className="stock-symbol font-mono">{stock.symbol}</span>
+          <span className="stock-exchange">NSE</span>
+        </div>
+
+        <div className="stock-metrics">
+          <div className="stock-price font-mono">₹{priceFormatted}</div>
+          <div className={`stock-change font-mono ${isDown ? "text-rose" : "text-emerald"}`}>
+            {isDown ? <KeyboardArrowDown className="arrow-icon" /> : <KeyboardArrowUp className="arrow-icon" />}
+            <span>{changeFormatted}</span>
+          </div>
         </div>
       </div>
-      {showWatchlistActions && <WatchListActions uid={stock.symbol} onRemove={onRemove} />}
+
+      {/* Hover Action Controls */}
+      <div className={`watchlist-item-actions ${hovered ? "visible" : ""}`}>
+        <WatchListActions uid={stock.symbol} onRemove={onRemove} />
+      </div>
     </li>
   );
 };
 
 const WatchListActions = ({ uid, onRemove }) => {
   const generalContext = useContext(GeneralContext);
+  const navigate = useNavigate();
 
-  const handleBuyClick = () => {
+  const handleBuyClick = (e) => {
+    e.stopPropagation();
     generalContext.openBuyWindow(uid);
   };
 
+  const handleSellClick = (e) => {
+    e.stopPropagation();
+    generalContext.openSellWindow(uid);
+  };
+
+  const handleInvestigate = (e) => {
+    e.stopPropagation();
+    navigate(`/research?symbol=${uid}&intent=SYMBOL_DEEP_DIVE&question=${encodeURIComponent(`What is the latest technical posture and catalyst evidence for ${uid}?`)}`);
+  };
+
   return (
-    <span className="actions">
-      <span>
-        <Tooltip
-          title="Buy (B)"
-          placement="top"
-          arrow
-          TransitionComponent={Grow}
-          onClick={handleBuyClick}
-        >
-          <button className="buy">Buy</button>
-        </Tooltip>
-        <Tooltip
-          title="Sell (S)"
-          placement="top"
-          arrow
-          TransitionComponent={Grow}
-          onClick={() => generalContext.openSellWindow(uid)}
-        >
-          <button className="sell">Sell</button>
-        </Tooltip>
-        <Tooltip
-          title="Analytics (A)"
-          placement="top"
-          arrow
-          TransitionComponent={Grow}
-        >
-          <button className="action">
-            <BarChartOutlined className="icon" />
-          </button>
-        </Tooltip>
-        <Tooltip title="Remove" placement="top" arrow TransitionComponent={Grow}>
-          <button className="action" onClick={onRemove}>
-            <DeleteOutlineIcon className="icon" />
-          </button>
-        </Tooltip>
-      </span>
-    </span>
+    <div className="actions-cluster">
+      <Tooltip title="Buy (B)" placement="top" arrow TransitionComponent={Grow}>
+        <button className="btn-action-buy" onClick={handleBuyClick} aria-label={`Buy ${uid}`}>
+          B
+        </button>
+      </Tooltip>
+      <Tooltip title="Sell (S)" placement="top" arrow TransitionComponent={Grow}>
+        <button className="btn-action-sell" onClick={handleSellClick} aria-label={`Sell ${uid}`}>
+          S
+        </button>
+      </Tooltip>
+      <Tooltip title="Investigate in AI Copilot" placement="top" arrow TransitionComponent={Grow}>
+        <button className="btn-action-investigate" onClick={handleInvestigate} aria-label={`Investigate ${uid}`}>
+          🔬
+        </button>
+      </Tooltip>
+      <Tooltip title="Remove from Watchlist" placement="top" arrow TransitionComponent={Grow}>
+        <button className="btn-action-remove" onClick={onRemove} aria-label={`Remove ${uid}`}>
+          <DeleteOutlineIcon style={{ fontSize: '15px' }} />
+        </button>
+      </Tooltip>
+    </div>
   );
 };

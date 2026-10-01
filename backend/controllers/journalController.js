@@ -78,10 +78,38 @@ const getReplay = async (req, res, next) => {
   }
 };
 
+const journalIntelligenceService = require('../services/journalIntelligenceService');
+
+const recordTradeReview = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+    const review = await journalIntelligenceService.recordTradeReview(userId, id, req.body);
+    res.json({ success: true, data: review, error: null });
+  } catch (err) {
+    if (err.message === 'JOURNAL_ENTRY_NOT_FOUND') {
+      return res.status(404).json({ success: false, data: null, error: { message: err.message } });
+    }
+    next(err);
+  }
+};
+
+const getJournalPatterns = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const patterns = await journalIntelligenceService.detectJournalPatterns(userId);
+    res.json({ success: true, data: patterns, error: null });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getJournals,
   getJournalById,
   updateJournal,
   deleteJournal,
-  getReplay
+  getReplay,
+  recordTradeReview,
+  getJournalPatterns
 };

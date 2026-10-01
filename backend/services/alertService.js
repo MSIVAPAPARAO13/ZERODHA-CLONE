@@ -23,8 +23,13 @@ class AlertService {
     const upperSymbol = symbol.toUpperCase();
     
     // Validate symbol
-    const quote = await marketDataService.getQuote(upperSymbol);
-    if (!quote) throw new Error(`Unknown symbol: ${upperSymbol}`);
+    let quote;
+    try {
+      quote = await marketDataService.getQuote(upperSymbol);
+      if (!quote) throw new Error(`Unknown symbol: ${upperSymbol}`);
+    } catch (e) {
+      throw new Error(`Unknown symbol: ${upperSymbol}`);
+    }
     
     // Check for exact duplicate active alert
     const existing = await AlertModel.findOne({ user: userId, symbol: upperSymbol, condition, targetPrice, isActive: true });

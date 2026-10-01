@@ -23,8 +23,13 @@ class WatchlistService {
     const upperSymbol = symbol.toUpperCase();
     
     // Validate symbol exists in market
-    const quote = await marketDataService.getQuote(upperSymbol);
-    if (!quote) throw new Error(`Unknown symbol: ${upperSymbol}`);
+    let quote;
+    try {
+      quote = await marketDataService.getQuote(upperSymbol);
+      if (!quote) throw new Error(`Unknown symbol: ${upperSymbol}`);
+    } catch (e) {
+      throw new Error(`Unknown symbol: ${upperSymbol}`);
+    }
     
     // Check if already in watchlist
     const existing = await WatchlistModel.findOne({ user: userId, symbol: upperSymbol });

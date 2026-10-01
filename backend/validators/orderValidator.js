@@ -4,8 +4,9 @@ const orderSchema = Joi.object({
   name: Joi.string().required().min(1),
   qty: Joi.number().required().positive().integer(),
   price: Joi.number().required().positive(),
-  mode: Joi.string().valid("BUY", "SELL").required()
-});
+  mode: Joi.string().valid("BUY", "SELL").required(),
+  journal: Joi.object().optional()
+}).unknown(true);
 
 const validateOrder = (req, res, next) => {
   const { error } = orderSchema.validate(req.body);

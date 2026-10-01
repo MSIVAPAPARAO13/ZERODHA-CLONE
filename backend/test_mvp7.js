@@ -99,7 +99,7 @@ async function runTests() {
     console.log('SUCCESS: Alert is one-time only.');
 
     console.log('ALL MVP-7 ALERTS TESTS PASSED!');
-    process.exit(0);
+    return;
   } catch (err) {
     console.error('Test Failed:', err.message);
     process.exit(1);

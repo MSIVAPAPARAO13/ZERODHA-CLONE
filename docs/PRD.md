@@ -36,6 +36,10 @@ TradeFlow SaaS is an AI-powered trading, paper-trading, and portfolio intelligen
 - **AI Portfolio Explanation**: "What Changed Today?" AI summaries.
 - **Trading Journal**: Automated logging of trade rationale and outcomes.
 - **Market Intelligence Dashboard**: Abstracted provider for market data with mock fallbacks.
+- **Market Event Cascade & Thesis Impact**: Multi-hop evidence propagation connecting macro/earnings catalysts through sector taxonomies to portfolio exposures, active playbooks, and user-authored theses with structured drift diffs and research question synthesis.
+- **Advanced Scenario & Stress Studio**: Deterministic what-if stress testing enabling users to simulate asset, sector, and broad index shocks on active paper holdings with exact mathematical loss attribution, strategy exposure mapping, thesis impact linking, what-if position simulations, and transparent calculation methodology without making predictions or mutating financial ledgers.
+- **Strategy Research & Backtesting 2.0**: Systematic historical backtesting engine with strict zero look-ahead protection, parameter grid experiments with sensitivity analysis, overfitting risk detection, out-of-sample walk-forward validation, and direct integration with Stress Studio and Thesis Review workflows.
+
 
 ## 8. User Stories
 - As a user, I want to create a paper-trading order, so that I can practice trading without risking real money.
@@ -86,8 +90,10 @@ TradeFlow SaaS is an AI-powered trading, paper-trading, and portfolio intelligen
 - **MVP 1**: Architecture cleanup.
 - **MVP 2**: Authentication.
 - **MVP 3**: Core Trading Domain (Users, Portfolio, Orders).
-- **MVP 4**: Paper Trading Engine.
+- **MVP 34**: Advanced Scenario & Stress Studio.
+- **MVP 35**: Strategy Research & Backtesting 2.0 (Walk-forward, train/test, parameter optimization).
+- **MVP 36**: Intelligent Market Scanner & Opportunity Research Engine (Discovery, Rule DSL AST, Multi-Engine Bridges).
 
 ## 18. Future Roadmap
-- **V1**: Trading journal, Alerts.
-- **V2**: AI explanations, Backtesting.
+- **MVP 37**: Automated Scan-Alert triggers & cross-asset event discovery.
+- **MVP 38**: Real-time streaming scanner integration.

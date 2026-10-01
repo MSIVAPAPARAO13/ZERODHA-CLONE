@@ -1,29 +1,51 @@
 import React, { useState } from "react";
 import { aiService } from "../services/api";
 
+const ACTIONS = [
+  {
+    type: "portfolioReview",
+    title: "Portfolio Review",
+    icon: "🏛️",
+    desc: "Analyze holdings, concentration risk, sector exposure and Herfindahl index.",
+  },
+  {
+    type: "patternReview",
+    title: "Pattern Review",
+    icon: "🔁",
+    desc: "Identify repeated behaviors and patterns in your recent journal entries.",
+  },
+  {
+    type: "dailyDebrief",
+    title: "Daily Debrief",
+    icon: "📅",
+    desc: "Summarize today's transactions, P&L movement and key activity.",
+  },
+  {
+    type: "whatChangedToday",
+    title: "What Changed Today",
+    icon: "⚡",
+    desc: "Quick factual summary of portfolio and watchlist differences in last 24h.",
+  },
+];
+
 const PortfolioAnalyst = () => {
   const [loadingType, setLoadingType] = useState(null);
-  const [results, setResults] = useState({
-    portfolioReview: null,
-    whatChangedToday: null,
-    dailyDebrief: null,
-    patternReview: null
-  });
+  const [results, setResults] = useState({});
   const [error, setError] = useState("");
 
   const handleAction = async (type) => {
     setLoadingType(type);
     setError("");
     try {
-      let res;
-      switch(type) {
-        case 'portfolioReview': res = await aiService.portfolioReview(); break;
-        case 'whatChangedToday': res = await aiService.whatChangedToday(); break;
-        case 'dailyDebrief': res = await aiService.dailyDebrief(); break;
-        case 'patternReview': res = await aiService.patternReview(); break;
-        default: break;
-      }
-      setResults(prev => ({ ...prev, [type]: res.data.data.analysis }));
+      const serviceMap = {
+        portfolioReview: aiService.portfolioReview,
+        patternReview: aiService.patternReview,
+        dailyDebrief: aiService.dailyDebrief,
+        whatChangedToday: aiService.whatChangedToday,
+      };
+      const res = await serviceMap[type]();
+      const analysis = res.data?.data?.analysis ?? res.data?.data ?? res.data;
+      setResults(prev => ({ ...prev, [type]: analysis }));
     } catch (err) {
       setError(err.response?.data?.error?.message || `Failed to perform ${type}.`);
     } finally {
@@ -31,88 +53,94 @@ const PortfolioAnalyst = () => {
     }
   };
 
-  const ActionCard = ({ title, description, actionType }) => (
-    <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: '8px', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-      <h3 style={{ margin: '0 0 10px 0', color: '#673ab7' }}>{title}</h3>
-      <p style={{ color: '#666', fontSize: '0.9em', flexGrow: 1, margin: '0 0 20px 0' }}>{description}</p>
-      
-      {!results[actionType] ? (
-        <button 
-          onClick={() => handleAction(actionType)}
-          disabled={loadingType !== null}
-          style={{ background: '#673ab7', color: 'white', border: 'none', padding: '10px', borderRadius: '4px', cursor: loadingType !== null ? 'not-allowed' : 'pointer' }}
-        >
-          {loadingType === actionType ? 'Analyzing...' : `Generate ${title}`}
-        </button>
-      ) : (
-        <div style={{ background: '#f5f0ff', padding: '15px', borderRadius: '4px', fontSize: '0.9em' }}>
-          {results[actionType].summary && <p style={{ fontWeight: 'bold', margin: '0 0 10px 0' }}>Summary</p>}
-          <p>{results[actionType].summary}</p>
-          
-          {results[actionType].portfolioFacts && (
-            <>
-              <p style={{ fontWeight: 'bold', margin: '15px 0 5px 0' }}>Portfolio Facts</p>
-              <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                {results[actionType].portfolioFacts.map((item, i) => <li key={i}>{item}</li>)}
-              </ul>
-            </>
-          )}
+  return (
+    <div className="terminal-dashboard">
+      {/* Header */}
+      <div className="context-ribbon">
+        <div className="ribbon-title-box">
+          <h1 className="terminal-page-title">✨ AI Portfolio Analyst</h1>
+          <p className="terminal-subtitle">
+            Educational AI analysis based on your recorded activity. Not investment advice.
+          </p>
+        </div>
+        <span className="badge-simulation">
+          <span className="pulse-dot"></span> AI ENGINE LIVE
+        </span>
+      </div>
 
-          {results[actionType].reflectionQuestions && (
-            <>
-              <p style={{ fontWeight: 'bold', margin: '15px 0 5px 0' }}>Reflection Questions</p>
-              <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                {results[actionType].reflectionQuestions.map((item, i) => <li key={i}>{item}</li>)}
-              </ul>
-            </>
-          )}
-
-          {/* Additional fields for specific analyses can be mapped here generically for MVP */}
-          {results[actionType].activityCount && <p style={{ marginTop: '10px' }}><strong>Activity:</strong> {results[actionType].activityCount}</p>}
-          
-          <button 
-            onClick={() => setResults(prev => ({ ...prev, [actionType]: null }))}
-            style={{ background: 'transparent', color: '#673ab7', border: '1px solid #673ab7', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', marginTop: '15px', width: '100%' }}
-          >
-            Clear Analysis
-          </button>
+      {error && (
+        <div style={{
+          background: '#2d0e14', border: '1px solid #f43f5e44', borderRadius: 8,
+          padding: '12px 16px', marginBottom: 16, color: '#f43f5e', fontSize: '0.85rem'
+        }}>
+          ⚠️ {error}
         </div>
       )}
-    </div>
-  );
 
-  return (
-    <div style={{ padding: "20px" }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <h3 className="title">✨ TradeFlow AI Analyst</h3>
-      </div>
-      <p style={{ color: '#666', marginBottom: '20px' }}>
-        TradeFlow AI provides educational analysis based on your recorded activity and available market data. It does not provide investment recommendations.
-      </p>
+      {/* Action Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+        {ACTIONS.map(({ type, title, icon, desc }) => (
+          <div key={type} className="terminal-card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className="card-header-compact">
+              <span className="kpi-label">{title}</span>
+              <span className="kpi-icon">{icon}</span>
+            </div>
+            <p style={{ color: '#64748b', fontSize: '0.8rem', lineHeight: 1.5, margin: 0 }}>{desc}</p>
 
-      {error && <div style={{ background: '#ffebee', color: '#c62828', padding: '10px', borderRadius: '4px', marginBottom: '20px' }}>{error}</div>}
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-        <ActionCard 
-          title="Portfolio Review" 
-          description="Analyze your current holdings, positions, and concentration risk." 
-          actionType="portfolioReview" 
-        />
-        <ActionCard 
-          title="Pattern Review" 
-          description="Identify repeated behaviors and patterns in your recent journal entries." 
-          actionType="patternReview" 
-        />
-        <ActionCard 
-          title="Daily Debrief" 
-          description="Summarize what happened today based on your transactions and journals." 
-          actionType="dailyDebrief" 
-        />
-        <ActionCard 
-          title="What Changed Today" 
-          description="Get a quick factual summary of portfolio and watchlist differences in the last 24h." 
-          actionType="whatChangedToday" 
-        />
+            {!results[type] ? (
+              <button
+                onClick={() => handleAction(type)}
+                disabled={loadingType !== null}
+                id={`ai-${type}-btn`}
+                style={{
+                  background: loadingType === type ? '#1e293b' : '#0284c7',
+                  color: '#fff', border: 'none', padding: '9px 16px',
+                  borderRadius: 6, cursor: loadingType !== null ? 'not-allowed' : 'pointer',
+                  fontWeight: 600, fontSize: '0.82rem', opacity: loadingType !== null && loadingType !== type ? 0.5 : 1
+                }}
+              >
+                {loadingType === type ? '⏳ Analyzing…' : `Run ${title}`}
+              </button>
+            ) : (
+              <div style={{ background: '#0a1628', border: '1px solid #1e293b', borderRadius: 6, padding: 14, fontSize: '0.82rem' }}>
+                {results[type].summary && (
+                  <>
+                    <p style={{ fontWeight: 600, color: '#38bdf8', marginBottom: 6, fontSize: '0.8rem' }}>SUMMARY</p>
+                    <p style={{ color: '#94a3b8', lineHeight: 1.6, marginBottom: 8 }}>{results[type].summary}</p>
+                  </>
+                )}
+                {results[type].portfolioFacts?.length > 0 && (
+                  <>
+                    <p style={{ fontWeight: 600, color: '#38bdf8', marginBottom: 4, fontSize: '0.8rem' }}>KEY FACTS</p>
+                    <ul style={{ paddingLeft: 16, margin: '0 0 8px', color: '#94a3b8', lineHeight: 1.7 }}>
+                      {results[type].portfolioFacts.map((f, i) => <li key={i}>{f}</li>)}
+                    </ul>
+                  </>
+                )}
+                {results[type].reflectionQuestions?.length > 0 && (
+                  <>
+                    <p style={{ fontWeight: 600, color: '#38bdf8', marginBottom: 4, fontSize: '0.8rem' }}>REFLECT</p>
+                    <ul style={{ paddingLeft: 16, margin: '0 0 8px', color: '#94a3b8', lineHeight: 1.7 }}>
+                      {results[type].reflectionQuestions.map((q, i) => <li key={i}>{q}</li>)}
+                    </ul>
+                  </>
+                )}
+                {typeof results[type] === 'string' && (
+                  <p style={{ color: '#94a3b8', lineHeight: 1.6 }}>{results[type]}</p>
+                )}
+                <button
+                  onClick={() => setResults(prev => { const n = { ...prev }; delete n[type]; return n; })}
+                  style={{
+                    background: 'transparent', color: '#64748b', border: '1px solid #334155',
+                    padding: '5px 12px', borderRadius: 4, cursor: 'pointer', fontSize: '0.75rem', marginTop: 8
+                  }}
+                >
+                  Clear ✕
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

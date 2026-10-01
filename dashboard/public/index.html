@@ -2,42 +2,76 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="theme-color" content="#090d16" />
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    <!-- Primary SEO Meta Tags -->
+    <title>TradeFlow — Advanced Quantitative & Paper Trading Terminal | Institutional Simulation</title>
+    <meta name="title" content="TradeFlow — Advanced Quantitative & Paper Trading Terminal" />
+    <meta name="description" content="TradeFlow is an institutional-grade paper trading simulation terminal. Practice trading NSE/BSE stocks risk-free with ₹1,50,000 virtual capital, AI research copilot, portfolio stress testing, market scanner, walk-forward strategy backtesting, and behavioral discipline coaching." />
+    <meta name="keywords" content="TradeFlow, paper trading terminal, stock market simulator, Zerodha clone, NSE paper trade, BSE trading simulation, AI trading copilot, portfolio stress test, market scanner, backtesting platform, Indian stock market, virtual trading, algorithmic trading" />
+    <meta name="author" content="TradeFlow Inc." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TradeFlow Terminal" />
+    <meta property="og:title" content="TradeFlow — Institutional Quantitative & Paper Trading Terminal" />
+    <meta property="og:description" content="Simulate trades, backtest strategies, analyze portfolio concentration, and research with AI — all risk-free with virtual capital." />
+    <meta property="og:image" content="%PUBLIC_URL%/logo.png" />
+    <meta property="og:url" content="https://tradeflow.app" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@TradeFlowApp" />
+    <meta name="twitter:title" content="TradeFlow — Paper Trading Terminal" />
+    <meta name="twitter:description" content="AI research copilot + portfolio risk analytics + live NSE paper trading simulation." />
+    <meta name="twitter:image" content="%PUBLIC_URL%/logo.png" />
+
+    <!-- Favicon & Mobile Web App -->
+    <link rel="icon" href="%PUBLIC_URL%/logo.png" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- Google Web Fonts: Preloaded Inter and JetBrains Mono for razor-sharp rendering -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://tradeflow.app/" />
+
+    <!-- Structured Data: JSON-LD for Search Engines -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "TradeFlow",
+      "url": "https://tradeflow.app",
+      "description": "Institutional-grade paper trading simulation terminal with AI research copilot, portfolio intelligence, market scanner, and strategy backtesting.",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR"
+      },
+      "featureList": [
+        "Simulated Paper Trading with Virtual Capital",
+        "AI-Powered Grounded Research Copilot",
+        "Institutional Portfolio Risk & Herfindahl Concentration",
+        "Scenario Stress Testing & Contagion Replay",
+        "Walk-Forward Strategy Lab Backtesting",
+        "Behavioral Learning & Discipline Coaching"
+      ]
+    }
+    </script>
+    <meta name="application-name" content="TradeFlow" />
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>TradeFlow requires JavaScript to run. Please enable JavaScript in your browser to access the trading terminal.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
   </body>
 </html>

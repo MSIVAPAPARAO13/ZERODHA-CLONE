@@ -1,107 +1,118 @@
 import React, { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
-const Menu = () => {
-  const [selectedMenu, setSelectedMenu] = useState(0);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const { user, logout } = useContext(AuthContext);
+const NAV_GROUPS = [
+  {
+    label: "TradeFlow",
+    items: [
+      { id: 0, label: "Overview", icon: "▦", path: "/" },
+      { id: 16, label: "Daily Insights", icon: "💡", path: "/insights", accent: "#0284c7" },
+    ],
+  },
+  {
+    label: "Market",
+    items: [
+      { id: 14, label: "Scanner", icon: "🔍", path: "/scanner", accent: "#047857" },
+      { id: 17, label: "Market Events", icon: "⚡", path: "/events", accent: "#ea580c" },
+      { id: 11, label: "Cascade", icon: "🌊", path: "/cascade", accent: "#0284c7" },
+    ],
+  },
+  {
+    label: "Research",
+    items: [
+      { id: 15, label: "Research Copilot", icon: "🔬", path: "/research", accent: "#7c3aed" },
+      { id: 13, label: "Strategy Lab", icon: "🧪", path: "/strategy-lab", accent: "#0e7490" },
+      { id: 5,  label: "AI Analyst", icon: "✨", path: "/ai-analyst", accent: "#8b5cf6" },
+    ],
+  },
+  {
+    label: "Portfolio",
+    items: [
+      { id: 2, label: "Holdings", icon: "📦", path: "/holdings" },
+      { id: 3, label: "Positions", icon: "📈", path: "/positions" },
+      { id: 1, label: "Orders", icon: "📋", path: "/orders" },
+      { id: 12, label: "Scenario Planner", icon: "🎯", path: "/stress-studio", accent: "#b91c1c" },
+      { id: 7, label: "Funds", icon: "💰", path: "/funds" },
+    ],
+  },
+  {
+    label: "Learning",
+    items: [
+      { id: 4,  label: "Journal", icon: "📝", path: "/journal" },
+      { id: 10, label: "Playbooks", icon: "📖", path: "/playbooks" },
+      { id: 9,  label: "Edge & Learning", icon: "⚙️", path: "/behavior-insights" },
+      { id: 6,  label: "Alerts", icon: "🔔", path: "/alerts" },
+    ],
+  },
+];
+
+const Sidebar = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useContext(AuthContext);
+  const [profileOpen, setProfileOpen] = useState(false);
 
-  const handleMenuClick = (index) => {
-    setSelectedMenu(index);
-  };
-
-  const handleProfileClick = () => {
-    setIsProfileDropdownOpen(!isProfileDropdownOpen);
-  };
+  const isActive = (path) =>
+    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
-  const menuClass = "menu";
-  const activeMenuClass = "menu selected";
+  const initials = (user?.name || user?.email || "TF").substring(0, 2).toUpperCase();
 
   return (
-    <div className="menu-container">
-      <img src="logo.png" style={{ width: "50px" }} alt="Logo" />
-      <div className="menus">
-        <ul>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/" onClick={() => handleMenuClick(0)}>
-              <p className={selectedMenu === 0 ? activeMenuClass : menuClass}>Dashboard</p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/orders" onClick={() => handleMenuClick(1)}>
-              <p className={selectedMenu === 1 ? activeMenuClass : menuClass}>Orders</p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/holdings" onClick={() => handleMenuClick(2)}>
-              <p className={selectedMenu === 2 ? activeMenuClass : menuClass}>Holdings</p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/positions" onClick={() => handleMenuClick(3)}>
-              <p className={selectedMenu === 3 ? activeMenuClass : menuClass}>Positions</p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/journal" onClick={() => handleMenuClick(4)}>
-              <p className={selectedMenu === 4 ? activeMenuClass : menuClass}>Journal</p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/behavior-insights" onClick={() => handleMenuClick(9)}>
-              <p className={selectedMenu === 9 ? activeMenuClass : menuClass}>Edge</p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/playbooks" onClick={() => handleMenuClick(10)}>
-              <p className={selectedMenu === 10 ? activeMenuClass : menuClass}>Playbooks</p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/ai-analyst" onClick={() => handleMenuClick(5)}>
-              <p className={selectedMenu === 5 ? activeMenuClass : menuClass} style={{ color: selectedMenu === 5 ? '#673ab7' : 'inherit' }}>
-                ✨ AI Analyst
-              </p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/alerts" onClick={() => handleMenuClick(6)}>
-              <p className={selectedMenu === 6 ? activeMenuClass : menuClass}>Alerts</p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/funds" onClick={() => handleMenuClick(7)}>
-              <p className={selectedMenu === 7 ? activeMenuClass : menuClass}>Funds</p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/apps" onClick={() => handleMenuClick(8)}>
-              <p className={selectedMenu === 8 ? activeMenuClass : menuClass}>Apps</p>
-            </Link>
-          </li>
-        </ul>
-        <hr />
-        <div className="profile" onClick={handleProfileClick} style={{ cursor: 'pointer', position: 'relative' }}>
-          <div className="avatar">{user ? user.name.substring(0, 2).toUpperCase() : 'ZU'}</div>
-          <p className="username">{user ? user.name : 'USER'}</p>
-          {isProfileDropdownOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, background: '#fff', border: '1px solid #ddd', padding: '10px', borderRadius: '4px', zIndex: 10 }}>
-              <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', fontWeight: 'bold' }}>
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
+    <aside className="sidebar">
+      {/* Logo */}
+      <div className="sidebar-logo">
+        <img src="logo.png" alt="TradeFlow" className="sidebar-logo-img" />
+        <span className="sidebar-brand">TradeFlow</span>
       </div>
-    </div>
+
+      {/* Nav Groups */}
+      <nav className="sidebar-nav">
+        {NAV_GROUPS.map((group) => (
+          <div className="sidebar-group" key={group.label}>
+            <p className="sidebar-group-label">{group.label}</p>
+            {group.items.map((item) => {
+              const active = isActive(item.path);
+              return (
+                <Link
+                  key={item.id}
+                  to={item.path}
+                  className={`sidebar-item${active ? " sidebar-item--active" : ""}`}
+                  style={active && item.accent ? { color: item.accent, background: `${item.accent}14` } : item.accent && !active ? { color: item.accent } : {}}
+                >
+                  <span className="sidebar-item-icon">{item.icon}</span>
+                  <span className="sidebar-item-label">{item.label}</span>
+                  {active && <span className="sidebar-item-pip" />}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
+
+      {/* Profile */}
+      <div className="sidebar-profile" onClick={() => setProfileOpen(!profileOpen)}>
+        <div className="sidebar-avatar">{initials}</div>
+        <div className="sidebar-profile-info">
+          <p className="sidebar-profile-name">{user?.name || user?.email?.split('@')[0] || "User"}</p>
+          <p className="sidebar-profile-sub">Paper Trading</p>
+        </div>
+        <span className="sidebar-profile-chevron">{profileOpen ? "▴" : "▾"}</span>
+        {profileOpen && (
+          <div className="sidebar-profile-dropdown">
+            <button className="sidebar-logout-btn" onClick={handleLogout}>
+              🚪 Logout
+            </button>
+          </div>
+        )}
+      </div>
+    </aside>
   );
 };
 
-export default Menu;
+export default Sidebar;

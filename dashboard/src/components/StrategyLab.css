@@ -1,0 +1,325 @@
+/* StrategyLab.css - MVP-35 Strategy Research & Backtesting 2.0 */
+
+.strategy-container {
+  padding: 24px;
+  max-width: 1350px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1e293b;
+}
+
+.strategy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.strategy-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.strategy-header p {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+.disclaimer-banner {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #64748b;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #475569;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+/* Tabs */
+.tab-bar {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #0284c7;
+}
+
+.tab-btn.active {
+  color: #0284c7;
+  border-bottom-color: #0284c7;
+}
+
+/* Main Grid Layout */
+.strategy-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .strategy-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sidebar / Builder */
+.sidebar-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.sidebar-panel h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: #0f172a;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 10px 16px;
+  background-color: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background-color: #0369a1;
+}
+
+.btn-primary:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  padding: 8px 14px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+/* Metric Cards Grid */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.metric-card span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.metric-card .val {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.metric-card .val.positive {
+  color: #16a34a;
+}
+
+.metric-card .val.negative {
+  color: #dc2626;
+}
+
+.metric-card small {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+  display: block;
+}
+
+/* Chart Canvas */
+.chart-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.chart-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table th {
+  background: #f8fafc;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+}
+
+.data-table tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-red { background: #fee2e2; color: #991b1b; }
+.badge-blue { background: #e0f2fe; color: #0369a1; }
+.badge-amber { background: #fef3c7; color: #92400e; }
+.badge-purple { background: #f3e8ff; color: #6b21a8; }
+
+/* Research & Stress Integration Cards */
+.integration-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.integration-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Sensitivity Gauge */
+.sensitivity-tag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.sensitivity-LOW { background: #dcfce7; color: #15803d; }
+.sensitivity-MEDIUM { background: #fef9c3; color: #854d0e; }
+.sensitivity-HIGH { background: #fee2e2; color: #b91c1c; }

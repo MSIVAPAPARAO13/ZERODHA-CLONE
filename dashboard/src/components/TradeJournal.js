@@ -5,6 +5,7 @@ import { journalService } from "../services/api";
 const TradeJournal = () => {
   const [journals, setJournals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchJournals();
@@ -13,85 +14,122 @@ const TradeJournal = () => {
   const fetchJournals = async () => {
     try {
       const res = await journalService.getJournals();
-      setJournals(res.data.data);
+      const list = res.data?.data ?? res.data;
+      setJournals(Array.isArray(list) ? list : []);
     } catch (err) {
-      console.error(err);
+      setError("Failed to load trade journal.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <div className="terminal-dashboard">
+      <div className="empty-center-box text-muted" style={{ padding: '60px 0' }}>
+        <span style={{ fontSize: '1.5rem' }}>📝</span>
+        <p style={{ marginTop: 8 }}>Loading journal entries…</p>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="terminal-dashboard">
+      <div className="empty-center-box" style={{ padding: '60px 0', color: '#f43f5e' }}>
+        <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+        <p style={{ marginTop: 8 }}>{error}</p>
+      </div>
+    </div>
+  );
+
+  const avgConfidence = journals.length > 0
+    ? (journals.reduce((a, j) => a + (j.confidence || 0), 0) / journals.length).toFixed(1)
+    : 0;
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h3 className="title">My Trade Journal</h3>
-      <div style={{ marginBottom: "20px", display: "flex", gap: "20px", background: "#f8f9fa", padding: "15px", borderRadius: "8px" }}>
-        <div>
-          <span style={{ fontSize: "24px", fontWeight: "bold", color: "#387ed1" }}>{journals.length}</span>
-          <p style={{ margin: 0, color: "#666" }}>Total Journaled Trades</p>
+    <div className="terminal-dashboard">
+      {/* Header */}
+      <div className="context-ribbon">
+        <div className="ribbon-title-box">
+          <h1 className="terminal-page-title">Trade Journal</h1>
+          <p className="terminal-subtitle">All journaled trades with thesis, confidence, and replay links.</p>
         </div>
-        <div>
-          <span style={{ fontSize: "24px", fontWeight: "bold", color: "#4caf50" }}>
-            {journals.filter(j => j.targetPrice).length}
-          </span>
-          <p style={{ margin: 0, color: "#666" }}>Trades With Target</p>
-        </div>
-        <div>
-          <span style={{ fontSize: "24px", fontWeight: "bold", color: "#e74c3c" }}>
-            {journals.filter(j => j.riskPrice).length}
-          </span>
-          <p style={{ margin: 0, color: "#666" }}>Trades With Risk</p>
-        </div>
-        <div>
-          <span style={{ fontSize: "24px", fontWeight: "bold", color: "#f39c12" }}>
-            {journals.length > 0 ? (journals.reduce((acc, curr) => acc + (curr.confidence || 0), 0) / journals.length).toFixed(1) : 0} / 5
-          </span>
-          <p style={{ margin: 0, color: "#666" }}>Avg. Confidence</p>
-        </div>
+        <span className="badge-simulation">
+          <span className="pulse-dot"></span> {journals.length} ENTRIES
+        </span>
       </div>
 
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Symbol</th>
-            <th>Side</th>
-            <th>Strategy</th>
-            <th>Entry</th>
-            <th>Target</th>
-            <th>Risk</th>
-            <th>Confidence</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {journals.map((journal) => (
-            <tr key={journal._id}>
-              <td>{new Date(journal.createdAt).toLocaleDateString()}</td>
-              <td style={{ fontWeight: 'bold' }}>{journal.symbol}</td>
-              <td style={{ color: journal.side === "BUY" ? "#387ed1" : "#e74c3c", fontWeight: 'bold' }}>{journal.side}</td>
-              <td>{journal.strategy}</td>
-              <td>₹{journal.entryPrice.toFixed(2)}</td>
-              <td>{journal.targetPrice ? `₹${journal.targetPrice.toFixed(2)}` : '-'}</td>
-              <td>{journal.riskPrice ? `₹${journal.riskPrice.toFixed(2)}` : '-'}</td>
-              <td>{journal.confidence ? `${journal.confidence}/5` : '-'}</td>
-              <td>
-                <Link to={`/replay/${journal._id}`} style={{ textDecoration: 'none', color: '#387ed1', fontWeight: 'bold' }}>
-                  View Replay
-                </Link>
-              </td>
-            </tr>
-          ))}
-          {journals.length === 0 && (
-            <tr>
-              <td colSpan="9" style={{ textAlign: "center", padding: "20px", color: "#999" }}>
-                No journal entries yet. Add a thesis when placing an order!
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      {/* KPI Row */}
+      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: 20 }}>
+        {[
+          { label: 'TOTAL JOURNALED', val: journals.length, icon: '📝' },
+          { label: 'WITH TARGET', val: journals.filter(j => j.targetPrice).length, icon: '🎯' },
+          { label: 'WITH STOP LOSS', val: journals.filter(j => j.riskPrice).length, icon: '🛡️' },
+          { label: 'AVG CONFIDENCE', val: `${avgConfidence} / 5`, icon: '⭐' },
+        ].map(({ label, val, icon }) => (
+          <div key={label} className="terminal-card kpi-card">
+            <div className="card-header-compact">
+              <span className="kpi-label">{label}</span>
+              <span className="kpi-icon">{icon}</span>
+            </div>
+            <div className="kpi-val text-primary-num font-mono">{val}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div className="terminal-card">
+        <div className="panel-header">
+          <h3 className="panel-title">📋 All Journaled Trades</h3>
+        </div>
+        <div className="table-responsive">
+          <table className="terminal-table" style={{ width: '100%' }}>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Symbol</th>
+                <th>Side</th>
+                <th>Strategy</th>
+                <th>Entry</th>
+                <th>Target</th>
+                <th>Stop</th>
+                <th>Conf.</th>
+                <th>Replay</th>
+              </tr>
+            </thead>
+            <tbody>
+              {journals.length === 0 ? (
+                <tr>
+                  <td colSpan="9" style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>
+                    No journal entries yet. Enable "Add Trade Thesis" when placing an order to log your first entry.
+                  </td>
+                </tr>
+              ) : journals.map((j) => (
+                <tr key={j._id}>
+                  <td className="font-mono text-muted" style={{ fontSize: '0.78rem' }}>
+                    {new Date(j.createdAt).toLocaleDateString('en-IN')}
+                  </td>
+                  <td className="font-mono font-semibold text-primary-num">{j.symbol}</td>
+                  <td>
+                    <span className={`badge-side ${j.side === 'BUY' ? 'badge-buy' : 'badge-sell'}`}>
+                      {j.side}
+                    </span>
+                  </td>
+                  <td className="text-muted" style={{ fontSize: '0.78rem' }}>{j.strategy || '—'}</td>
+                  <td className="font-mono">₹{Number(j.entryPrice || 0).toFixed(2)}</td>
+                  <td className="font-mono text-emerald">{j.targetPrice ? `₹${Number(j.targetPrice).toFixed(2)}` : '—'}</td>
+                  <td className="font-mono text-rose">{j.riskPrice ? `₹${Number(j.riskPrice).toFixed(2)}` : '—'}</td>
+                  <td className="font-mono">{j.confidence ? `${j.confidence}/5` : '—'}</td>
+                  <td>
+                    <Link to={`/replay/${j._id}`} className="btn-investigate" style={{ fontSize: '0.72rem' }}>
+                      Replay →
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };

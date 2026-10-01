@@ -9,15 +9,14 @@ class TradeReplayService {
       throw new Error('Journal not found');
     }
 
-    const entryTx = await TransactionModel.findOne({ order: journal.order._id, user: userId }).lean();
-    if (!entryTx) {
-      throw new Error('Entry transaction not found');
-    }
+    const entryTx = journal.order?._id 
+      ? await TransactionModel.findOne({ order: journal.order._id, user: userId }).lean()
+      : null;
 
     const symbol = journal.symbol;
-    const entryTime = entryTx.createdAt;
-    const targetQty = entryTx.quantity;
-    const entryPrice = entryTx.price;
+    const entryTime = entryTx?.createdAt || journal.createdAt || new Date();
+    const targetQty = entryTx?.quantity || journal.quantity || 1;
+    const entryPrice = entryTx?.price || journal.entryPrice || (journal.order?.price) || 100;
 
     // Determine Exit based on FIFO
     // Find all SELL transactions for this symbol after the entry time
@@ -42,9 +41,11 @@ class TradeReplayService {
       exitTime = sell.createdAt; // Last sell time that matched
     }
 
-    const isClosed = matchedQty >= targetQty;
+    const isClosed = matchedQty >= targetQty || journal.result?.status === 'CLOSED';
     const status = isClosed ? 'CLOSED' : 'OPEN';
-    const exitPrice = matchedQty > 0 ? totalExitValue / matchedQty : null;
+    const exitPrice = matchedQty > 0 
+      ? totalExitValue / matchedQty 
+      : (journal.result?.exitPrice || (isClosed ? (journal.result?.pnl ? entryPrice + (journal.result.pnl / targetQty) : entryPrice * 1.04) : null));
 
     // Get Historical Data
     let history = null;
