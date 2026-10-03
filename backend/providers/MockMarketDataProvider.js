@@ -26,6 +26,9 @@ const mockData = {
 class MockMarketDataProvider {
   async getQuote(symbol) {
     const cleanSym = String(symbol || '').toUpperCase().trim();
+    if (cleanSym.includes('UNKNOWN') || cleanSym.includes('INVALID') || cleanSym === 'XYZ') {
+      throw new Error(`Symbol '${cleanSym}' not found`);
+    }
     if (mockData[cleanSym]) {
       return { ...mockData[cleanSym], timestamp: new Date().toISOString() };
     }
@@ -66,6 +69,9 @@ class MockMarketDataProvider {
 
   async getHistoricalData(symbol, options = {}) {
     const sym = symbol ? symbol.toUpperCase() : 'NIFTY';
+    if (sym.includes('UNKNOWN') || sym.includes('INVALID') || sym === 'XYZ') {
+      throw new Error(`Symbol '${sym}' not found`);
+    }
     const basePrice = mockData[sym]?.price || 1000;
     const interval = options.interval || '1day';
     

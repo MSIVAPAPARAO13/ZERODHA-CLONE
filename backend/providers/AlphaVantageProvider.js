@@ -98,17 +98,24 @@ class AlphaVantageProvider {
 
   async getHistoricalData(symbol, options = {}) {
      try {
+      const formattedSymbol = this._formatSymbol(symbol);
       const response = await this.client.get(`/query`, {
-        params: { function: 'TIME_SERIES_DAILY', symbol, apikey: this.apiKey }
+        params: { function: 'TIME_SERIES_DAILY', symbol: formattedSymbol, apikey: this.apiKey }
       });
+      if (response.data.Note && response.data.Note.includes('call frequency')) {
+        throw new Error('MARKET_DATA_RATE_LIMITED');
+      }
       if (response.data.Information && response.data.Information.includes('rate limit')) {
         throw new Error('MARKET_DATA_RATE_LIMITED');
       }
       
       const ts = response.data['Time Series (Daily)'];
-      if (!ts) return null;
+      if (!ts) {
+        throw new Error('DATA_UNAVAILABLE: No daily series returned by AlphaVantage');
+      }
       
-      const data = Object.keys(ts).slice(0, 30).map(date => ({
+      const limit = options.days || 60;
+      const data = Object.keys(ts).slice(0, limit).map(date => ({
          timestamp: date,
          open: parseFloat(ts[date]['1. open']),
          high: parseFloat(ts[date]['2. high']),
@@ -124,16 +131,16 @@ class AlphaVantageProvider {
          source: 'alphavantage'
       };
      } catch(err) {
-        if (err.message === 'MARKET_DATA_RATE_LIMITED') throw err;
-        return null;
+        throw err;
      }
   }
 
   async getTechnicalIndicators(symbol, indicator, options = {}) {
      try {
        const functionName = indicator.toUpperCase();
+       const formattedSymbol = this._formatSymbol(symbol);
        const response = await this.client.get(`/query`, {
-         params: { function: functionName, symbol, interval: 'daily', time_period: 14, series_type: 'close', apikey: this.apiKey }
+         params: { function: functionName, symbol: formattedSymbol, interval: 'daily', time_period: 14, series_type: 'close', apikey: this.apiKey }
        });
        if (response.data.Information && response.data.Information.includes('rate limit')) {
         throw new Error('MARKET_DATA_RATE_LIMITED');

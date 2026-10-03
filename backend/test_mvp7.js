@@ -21,6 +21,16 @@ async function runTests() {
     });
     const tokenB = (await resB.json()).data.token;
 
+    // Clear starter alerts via API so test operates on fresh alerts baseline
+    const currA = await (await fetch(`${API_URL}/alerts`, { headers: { Authorization: `Bearer ${tokenA}` } })).json();
+    for (const a of (currA.data || [])) {
+      await fetch(`${API_URL}/alerts/${a._id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${tokenA}` } });
+    }
+    const currB = await (await fetch(`${API_URL}/alerts`, { headers: { Authorization: `Bearer ${tokenB}` } })).json();
+    for (const a of (currB.data || [])) {
+      await fetch(`${API_URL}/alerts/${a._id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${tokenB}` } });
+    }
+
     // 3. Create Valid Alert
     console.log('User A creates TCS alert...');
     let res = await fetch(`${API_URL}/alerts`, {

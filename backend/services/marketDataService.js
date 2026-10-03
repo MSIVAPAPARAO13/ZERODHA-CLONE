@@ -26,15 +26,7 @@ class MarketDataService {
    * Primary -> Fallback Provider -> Timestamped Cache -> DATA_UNAVAILABLE
    */
   async executeWithFallback(operationName, key, fn, fallbackFn) {
-    // 0a. Check Fresh Cache first (within 60 seconds)
-    if (this.cache.has(key)) {
-      const entry = this.cache.get(key);
-      if (Date.now() - entry.timestamp < 60 * 1000) {
-        return entry.data;
-      }
-    }
-
-    // 0b. Circuit Breaker: If primary recently rate limited, immediately invoke fallback
+    // 0. Circuit Breaker: If primary recently rate limited, immediately invoke fallback
     if (this.rateLimitUntil && Date.now() < this.rateLimitUntil) {
       if (fallbackFn) {
         try {
@@ -117,7 +109,10 @@ class MarketDataService {
   async getQuotes(symbols = []) {
     if (!symbols || symbols.length === 0) {
       if (this.provider && typeof this.provider.getQuotes === 'function') {
-        return this.provider.getQuotes();
+        try {
+          const res = await this.provider.getQuotes();
+          if (res && res.length > 0) return res;
+        } catch (e) {}
       }
       return this.fallbackProvider.getQuotes();
     }

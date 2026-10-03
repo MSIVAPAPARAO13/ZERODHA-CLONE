@@ -230,7 +230,13 @@ class ScenarioEngine {
     });
 
     // 2. Resolve fresh reference prices where available
-    if (!options.useLedgerPrices) {
+    if (options.referencePrices) {
+      for (const [sym, asset] of assetMap.entries()) {
+        if (options.referencePrices[sym] !== undefined) {
+          asset.referencePrice = options.referencePrices[sym];
+        }
+      }
+    } else if (!options.useLedgerPrices) {
       for (const [sym, asset] of assetMap.entries()) {
         try {
           const liveQuote = await marketDataService.getQuote(sym).catch(() => null);
@@ -326,9 +332,20 @@ class ScenarioEngine {
       throw new Error('AT_LEAST_TWO_SCENARIOS_REQUIRED_FOR_COMPARISON');
     }
 
-    const runs = [];
-    for (const sDef of scenarioIdsOrDefs) {
-      const runRes = await this.runScenario(userId, sDef, options);
+    const firstRun = await this.runScenario(userId, scenarioIdsOrDefs[0], options);
+    const referencePrices = {};
+    if (firstRun.holdingAttribution) {
+      firstRun.holdingAttribution.forEach(h => {
+        referencePrices[h.symbol] = h.referencePrice;
+      });
+    }
+
+    const runs = [firstRun];
+    for (let i = 1; i < scenarioIdsOrDefs.length; i++) {
+      const runRes = await this.runScenario(userId, scenarioIdsOrDefs[i], {
+        ...options,
+        referencePrices
+      });
       runs.push(runRes);
     }
 

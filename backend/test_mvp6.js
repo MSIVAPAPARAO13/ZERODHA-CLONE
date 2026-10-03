@@ -12,14 +12,27 @@ async function runTests() {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: 'User A', email: 'usera_' + Date.now() + '@test.com', password: 'password123' })
     });
-    const tokenA = (await resA.json()).data.token;
+    const dataA = await resA.json();
+    const tokenA = dataA.data.token;
+    const userAId = dataA.data.user.id;
 
     // 2. Register User B
     const resB = await fetch(`${API_URL}/auth/register`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: 'User B', email: 'userb_' + Date.now() + '@test.com', password: 'password123' })
     });
-    const tokenB = (await resB.json()).data.token;
+    const dataB = await resB.json();
+    const tokenB = dataB.data.token;
+
+    // Clear starter watchlist via API so test validates fresh additions
+    const currA = await (await fetch(`${API_URL}/watchlist`, { headers: { Authorization: `Bearer ${tokenA}` } })).json();
+    for (const item of (currA.data || [])) {
+      await fetch(`${API_URL}/watchlist/${item.symbol}`, { method: 'DELETE', headers: { Authorization: `Bearer ${tokenA}` } });
+    }
+    const currB = await (await fetch(`${API_URL}/watchlist`, { headers: { Authorization: `Bearer ${tokenB}` } })).json();
+    for (const item of (currB.data || [])) {
+      await fetch(`${API_URL}/watchlist/${item.symbol}`, { method: 'DELETE', headers: { Authorization: `Bearer ${tokenB}` } });
+    }
 
     // 3. User A Adds TCS
     console.log('User A adds TCS...');

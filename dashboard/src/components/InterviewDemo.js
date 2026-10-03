@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import { demoService } from "../services/api";
 
 const InterviewDemo = () => {
   const [demoData, setDemoData] = useState(null);
@@ -9,9 +9,7 @@ const InterviewDemo = () => {
   useEffect(() => {
     const fetchDemo = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await axios.get("http://localhost:3002/api/v1/demo", { headers });
+        const res = await demoService.getOverview();
         if (res.data?.success) {
           setDemoData(res.data.data);
         }

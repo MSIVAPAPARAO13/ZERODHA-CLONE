@@ -41,10 +41,11 @@ async function runTests() {
     // 5. Fetch Orders as User B
     const fetchB = await fetch(`${API_URL}/orders`, { headers: { Authorization: `Bearer ${tokenB}` } });
     const ordersB = await fetchB.json();
-    console.log(`User B sees ${ordersB.data.length} orders. (Expected: 0)`);
+    const userAOrderIds = new Set(ordersA.data.map(o => o._id));
+    const leakFound = ordersB.data.some(o => userAOrderIds.has(o._id));
 
-    if (ordersB.data.length === 0 && ordersA.data.length > 0) {
-      console.log('SUCCESS: User Data Isolation verified!');
+    if (!leakFound && ordersA.data.length > ordersB.data.length) {
+      console.log('SUCCESS: User Data Isolation verified! Zero cross-tenant order leakage.');
     } else {
       console.log('FAILED: User B can see User A orders.');
       process.exit(1);

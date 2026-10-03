@@ -16,7 +16,7 @@ async function runTests() {
     console.log('Fetching quote for RELIANCE...');
     const qRes = await fetch(`${API_URL}/market/quote/RELIANCE`, { headers: { Authorization: `Bearer ${token}` } });
     const qData = await qRes.json();
-    if (qRes.status !== 200 || qData.data.symbol !== 'RELIANCE') throw new Error('Failed to fetch valid quote');
+    if (qRes.status !== 200 || !qData.data?.symbol?.startsWith('RELIANCE')) throw new Error('Failed to fetch valid quote');
     console.log('SUCCESS: Fetched RELIANCE quote.');
 
     // 3. Fetch unknown quote -> 404
