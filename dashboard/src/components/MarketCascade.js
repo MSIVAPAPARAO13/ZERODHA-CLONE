@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { marketCascadeService } from '../services/api';
 import toast from 'react-hot-toast';
 import './MarketCascade.css';
@@ -15,11 +15,23 @@ const MarketCascade = () => {
   const [aiLoading, setAiLoading] = useState(false);
   const [viewMode, setViewMode] = useState('cascade'); // 'cascade', 'timeline'
 
-  useEffect(() => {
-    fetchEvents();
+  const loadCascade = useCallback(async (eventId, currentDepth) => {
+    try {
+      setLoading(true);
+      setSelectedNode(null);
+      setAiExplanation(null);
+      const res = await marketCascadeService.getCascade(eventId, { depth: currentDepth });
+      if (res.data.success) {
+        setCascade(res.data.data);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || 'Error generating cascade');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
       const res = await marketCascadeService.getEvents();
@@ -34,23 +46,11 @@ const MarketCascade = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [depth, loadCascade]);
 
-  const loadCascade = async (eventId, currentDepth) => {
-    try {
-      setLoading(true);
-      setSelectedNode(null);
-      setAiExplanation(null);
-      const res = await marketCascadeService.getCascade(eventId, { depth: currentDepth });
-      if (res.data.success) {
-        setCascade(res.data.data);
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.error?.message || 'Error generating cascade');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const handleEventChange = (e) => {
     const newId = e.target.value;

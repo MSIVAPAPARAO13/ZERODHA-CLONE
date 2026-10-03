@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { journalService, aiService } from "../services/api";
 
@@ -12,11 +12,7 @@ const TradeReplay = () => {
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiError, setAiError] = useState("");
 
-  useEffect(() => {
-    fetchReplay();
-  }, [id]);
-
-  const fetchReplay = async () => {
+  const fetchReplay = useCallback(async () => {
     try {
       const res = await journalService.getReplay(id);
       setReplayData(res.data.data);
@@ -25,7 +21,11 @@ const TradeReplay = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchReplay();
+  }, [fetchReplay]);
 
   const handleAnalyze = async () => {
     setAiLoading(true);

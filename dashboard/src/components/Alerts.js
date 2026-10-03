@@ -107,19 +107,25 @@ const Alerts = () => {
               onChange={(e) => setSymbol(e.target.value)}
               style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
             />
-            {symbol && searchResults.length > 0 && (
+            {symbol && (
               <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #ddd', zIndex: 10 }}>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {searchResults.map(s => (
-                    <li 
-                      key={s.symbol} 
-                      onClick={() => { setSymbol(s.symbol); setSearchResults([]); }}
-                      style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
-                    >
-                      {s.symbol}
-                    </li>
-                  ))}
-                </ul>
+                {searching ? (
+                  <div style={{ padding: '8px', color: '#666', fontSize: '0.85rem' }}>Searching symbols...</div>
+                ) : searchResults.length > 0 ? (
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {searchResults.map(s => (
+                      <li 
+                        key={s.symbol} 
+                        onClick={() => { setSymbol(s.symbol); setSearchResults([]); }}
+                        style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                      >
+                        {s.symbol}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div style={{ padding: '8px', color: '#888', fontSize: '0.85rem' }}>No symbols found</div>
+                )}
               </div>
             )}
           </div>

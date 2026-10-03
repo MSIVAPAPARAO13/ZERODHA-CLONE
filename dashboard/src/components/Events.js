@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { marketEventsService } from '../services/api';
@@ -12,11 +12,7 @@ export default function Events() {
   const [severityFilter, setSeverityFilter] = useState('ALL');
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  useEffect(() => {
-    loadEvents();
-  }, [severityFilter]);
-
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
@@ -32,7 +28,11 @@ export default function Events() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [severityFilter]);
+
+  useEffect(() => {
+    loadEvents();
+  }, [loadEvents]);
 
   const handleEvaluate = async () => {
     setEvaluating(true);
